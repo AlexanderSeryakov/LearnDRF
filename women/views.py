@@ -3,54 +3,40 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from rest_framework import generics, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Women, Category
 from .serializers import WomenSerializer
+from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 
 
 def get_home(request):
+    """Заглушка для отображения страницы по адресу localhost:8000/api/"""
     return HttpResponse('<h1>Welcome to start page</h1>')
 
 
 class WomenAPIList(generics.ListCreateAPIView):
+    """Отвечает за отображение всех записей из таблицы Women и создание новых записей.
+    Создавать запись может только авторизованный пользователь, иначе только чтение"""
     queryset = Women.objects.all()
     serializer_class = WomenSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, )
 
 
 class WomenAPIUpdate(generics.RetrieveUpdateAPIView):
+    """Отвечает за отображение конкретной записи таблицы Women и её обновление.
+    Обновлять запись может только авторизованный пользователь, который связан с этой записью, иначе только чтение"""
     queryset = Women.objects.all()
     serializer_class = WomenSerializer
+    permission_classes = (IsOwnerOrReadOnly, )
 
 
+#
 class WomenAPIDestroy(generics.RetrieveDestroyAPIView):
+    """Отвечает за тображение конкретной записи таблицы Women и её удаление.
+    Удалять запись может только авторизованный пользователь с правами superuser, иначе только чтение"""
     queryset = Women.objects.all()
     serializer_class = WomenSerializer
-
-# # Класс - представление созданный на основе ModelViewSet
-# class WomenViewSet(viewsets.ModelViewSet):
-#     """Класс-представления связанный с моделью Women, использует WomenSerializer - сериализатор
-#         Имеет полный функционал для чтения, обновления, создания и удаления записи.
-#     """
-#     queryset = Women.objects.all()
-#     serializer_class = WomenSerializer
-#     permission_classes = (IsAuthenticatedOrReadOnly, )
-#
-#     @action(methods=['get'], detail=False)
-#     def get_all_category(self, request):
-#         """Метод позволяет получить все категории(записи) из таблицы Category"""
-#         cats = Category.objects.all()
-#         return Response({'cats': [cat.name for cat in cats]})
-#
-#     @action(methods=['get'], detail=True)
-#     def get_one_category(self, request, pk=None):
-#         """Метод позволяет получить одну конкретную категорию(запись) из таблицы Category"""
-#         if pk is None:
-#             return Response({'failed': 'please, enter correct pk(id)'})
-#         try:
-#             cat = Category.objects.get(pk=pk)
-#         except Exception:
-#             return Response({'failed': 'please, enter correct pk(id)'})
-#         return Response({'cat': cat.name})
+    permission_classes = (IsAdminOrReadOnly, )
