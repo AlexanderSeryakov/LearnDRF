@@ -33,7 +33,6 @@ class WomenAPIUpdate(generics.RetrieveUpdateAPIView):
     permission_classes = (IsOwnerOrReadOnly, )
 
 
-#
 class WomenAPIDestroy(generics.RetrieveDestroyAPIView):
     """Отвечает за тображение конкретной записи таблицы Women и её удаление.
     Удалять запись может только авторизованный пользователь с правами superuser, иначе только чтение"""
